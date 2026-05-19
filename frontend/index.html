@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSI Compare</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────── -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <span class="header-icon">&#9783;</span>
+      <div>
+        <h1 class="header-title">PSI Compare</h1>
+        <p class="header-subtitle">Supply Chain PSI Analysis &amp; Demand Shift Detection</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="header-badge">Supply Chain Intelligence</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Upload Section ─────────────────────────────────────────── -->
+<main id="upload-section" class="section upload-section">
+  <div class="section-title">
+    <h2>Upload PSI Files</h2>
+    <p class="section-subtitle">Upload OLD and NEW PSI Excel files to detect demand changes</p>
+  </div>
+
+  <form id="compare-form" novalidate>
+    <div class="upload-grid">
+      <!-- OLD File -->
+      <div class="upload-card" id="drop-old" data-target="file-old">
+        <div class="upload-icon">&#128194;</div>
+        <div class="upload-label">OLD PSI File</div>
+        <div class="upload-hint">Drag &amp; drop or click to browse (.xlsx / .xlsb)</div>
+        <div class="upload-filename" id="name-old">No file selected</div>
+        <input type="file" id="file-old" name="file_old" accept=".xlsx,.xlsb" hidden />
+      </div>
+
+      <!-- NEW File -->
+      <div class="upload-card" id="drop-new" data-target="file-new">
+        <div class="upload-icon">&#128194;</div>
+        <div class="upload-label">NEW PSI File</div>
+        <div class="upload-hint">Drag &amp; drop or click to browse (.xlsx / .xlsb)</div>
+        <div class="upload-filename" id="name-new">No file selected</div>
+        <input type="file" id="file-new" name="file_new" accept=".xlsx,.xlsb" hidden />
+      </div>
+    </div>
+
+    <!-- Settings row -->
+    <div class="settings-row">
+      <div class="setting-group">
+        <label for="start-week">Start Week</label>
+        <input type="text" id="start-week" name="start_week" placeholder="e.g. W20" maxlength="5" />
+      </div>
+      <div class="setting-group">
+        <label for="threshold-compare">PSI Compare Threshold</label>
+        <div class="input-suffix-wrap">
+          <input type="number" id="threshold-compare" name="threshold_compare"
+                 value="20" min="1" max="100" step="1" />
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label for="threshold-window">Window 3W Threshold</label>
+        <div class="input-suffix-wrap">
+          <input type="number" id="threshold-window" name="threshold_window"
+                 value="10" min="1" max="100" step="1" />
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" id="compare-btn" class="btn btn-primary btn-lg">
+        <span class="btn-icon">&#9654;</span> Run Comparison
+      </button>
+    </div>
+
+    <div id="error-box" class="error-box hidden"></div>
+
+    <!-- Progress -->
+    <div id="progress-wrap" class="progress-wrap hidden">
+      <div class="progress-label" id="progress-label">Processing files...</div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+    </div>
+  </form>
+</main>
+
+<!-- ── Results Section ────────────────────────────────────────── -->
+<section id="results-section" class="section results-section hidden">
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-bar-left">
+      <button class="tab-btn active" data-tab="tab-compare">
+        PSI Compare
+      </button>
+      <button class="tab-btn" data-tab="tab-window">
+        Window 3W
+      </button>
+    </div>
+    <div class="tab-bar-right">
+      <button id="new-compare-btn" class="btn btn-secondary btn-sm">
+        &#8593; New Comparison
+      </button>
+      <button id="download-btn" class="btn btn-download">
+        &#11123; Download Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- ── TAB 1: PSI Compare ──────────────────────────────────── -->
+  <div class="tab-pane active" id="tab-compare">
+
+    <!-- KPI Cards -->
+    <div class="kpi-row" id="kpi-compare">
+      <div class="kpi-card kpi-new">
+        <div class="kpi-icon">&#10133;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">NEW ITEMS</div>
+          <div class="kpi-count" id="kpi-new-count">0</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-removed">
+        <div class="kpi-icon">&#10060;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">REMOVED</div>
+          <div class="kpi-count" id="kpi-removed-count">0</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-spike">
+        <div class="kpi-icon">&#9650;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">DEMAND UP &gt;20%</div>
+          <div class="kpi-count" id="kpi-spike-count">0</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-drop">
+        <div class="kpi-icon">&#9660;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">DEMAND DOWN &gt;20%</div>
+          <div class="kpi-count" id="kpi-drop-count">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <input type="search" id="compare-search" class="filter-input"
+               placeholder="Search item / vendor / description..." />
+      </div>
+      <div class="filter-group">
+        <label for="compare-status-filter">Status</label>
+        <select id="compare-status-filter" class="filter-select">
+          <option value="ALL">ALL</option>
+          <option value="NEW">NEW</option>
+          <option value="REMOVED">REMOVED</option>
+          <option value="SPIKE">SPIKE</option>
+          <option value="DROP">DROP</option>
+          <option value="CHANGED">CHANGED</option>
+          <option value="SAME">SAME</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="compare-type-filter">Type</label>
+        <select id="compare-type-filter" class="filter-select">
+          <option value="ALL">ALL</option>
+          <option value="Demand">Demand</option>
+          <option value="Delivery (ETA)">Delivery (ETA)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <button id="toggle-weeks-btn" class="btn btn-secondary btn-sm">Show All Weeks</button>
+      </div>
+    </div>
+
+    <!-- Compare Table -->
+    <div class="table-container" id="compare-table-wrap">
+      <table id="compare-table" class="data-table psi-table">
+        <thead id="compare-thead"></thead>
+        <tbody id="compare-tbody"></tbody>
+      </table>
+    </div>
+    <div id="compare-empty" class="empty-state hidden">No results match your filters.</div>
+    <div id="compare-pagination" class="pagination-container hidden">
+      <button id="page-prev" class="btn btn-secondary btn-sm">&laquo; Prev</button>
+      <span id="page-info" class="page-info">Page 1 of 1</span>
+      <button id="page-next" class="btn btn-secondary btn-sm">Next &raquo;</button>
+    </div>
+  </div>
+
+  <!-- ── TAB 2: Window 3W ────────────────────────────────────── -->
+  <div class="tab-pane" id="tab-window">
+
+    <!-- KPI Cards -->
+    <div class="kpi-row" id="kpi-window">
+      <div class="kpi-card kpi-increase">
+        <div class="kpi-icon">&#9650;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">INCREASE</div>
+          <div class="kpi-count" id="kpi-increase-count">0</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-decrease">
+        <div class="kpi-icon">&#9660;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">DECREASE</div>
+          <div class="kpi-count" id="kpi-decrease-count">0</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-newdemand">
+        <div class="kpi-icon">&#10133;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">NEW DEMAND</div>
+          <div class="kpi-count" id="kpi-newdemand-count">0</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-zeroout">
+        <div class="kpi-icon">&#8854;</div>
+        <div class="kpi-body">
+          <div class="kpi-label">ZERO OUT</div>
+          <div class="kpi-count" id="kpi-zeroout-count">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <input type="search" id="window-search" class="filter-input"
+               placeholder="Search item / vendor / description..." />
+      </div>
+      <div class="filter-group">
+        <label for="window-direction-filter">Direction</label>
+        <select id="window-direction-filter" class="filter-select">
+          <option value="ALL">ALL</option>
+          <option value="INCREASE">INCREASE</option>
+          <option value="DECREASE">DECREASE</option>
+          <option value="NEW DEMAND">NEW DEMAND</option>
+          <option value="ZERO OUT">ZERO OUT</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="window-type-filter">Type</label>
+        <select id="window-type-filter" class="filter-select">
+          <option value="ALL">ALL</option>
+          <option value="Demand">Demand</option>
+          <option value="Delivery (ETA)">Delivery (ETA)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Window Table -->
+    <div class="table-container">
+      <table id="window-table" class="data-table window-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Vendor</th>
+            <th>Type</th>
+            <th>Direction</th>
+            <th>Zone Window</th>
+            <th>Wks</th>
+            <th>OLD</th>
+            <th>NEW</th>
+            <th>Delta</th>
+            <th>%Delta</th>
+            <th>LT</th>
+            <th>MOQ</th>
+            <th>SS</th>
+            <th>Ending</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="window-tbody"></tbody>
+      </table>
+    </div>
+    <div id="window-empty" class="empty-state hidden">No alerts match your filters.</div>
+  </div>
+</section>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Analyzing PSI data...</div>
+</div>
+
+<footer class="app-footer">
+  <div class="footer-inner">
+    PSI Compare &mdash; Supply Chain Demand Intelligence &bull; Powered by FastAPI + Python
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
