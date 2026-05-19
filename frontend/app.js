@@ -335,15 +335,26 @@ function renderCompareTab() {
   _state.groups = groups;
   _state.groupOrder = groupOrder;
 
-  // Filters
-  const searchEl  = $('compare-search');
-  const statusEl  = $('compare-status-filter');
-  const typeEl    = $('compare-type-filter');
+  // Filters (Dynamically populate options based on active dataset)
+  const uniqueTypes = ['ALL', ...new Set(data.map(r => r.seg_type).filter(Boolean))];
+  const typeEl = $('compare-type-filter');
+  const selectedType = typeEl.value || 'ALL';
+  typeEl.innerHTML = uniqueTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+  if (uniqueTypes.includes(selectedType)) {
+    typeEl.value = selectedType;
+  } else {
+    typeEl.value = 'ALL';
+  }
 
-  const applyFilter = () => applyCompareFilter();
-  searchEl.addEventListener('input', applyFilter);
-  statusEl.addEventListener('change', applyFilter);
-  typeEl.addEventListener('change', applyFilter);
+  const uniqueStatuses = ['ALL', ...new Set(data.map(r => r.status).filter(Boolean))];
+  const statusEl = $('compare-status-filter');
+  const selectedStatus = statusEl.value || 'ALL';
+  statusEl.innerHTML = uniqueStatuses.map(s => `<option value="${s}">${s}</option>`).join('');
+  if (uniqueStatuses.includes(selectedStatus)) {
+    statusEl.value = selectedStatus;
+  } else {
+    statusEl.value = 'ALL';
+  }
 
   applyCompareFilter();
 }
@@ -362,10 +373,16 @@ function applyCompareFilter() {
       (itemRows[0].vendor || '').toLowerCase().includes(search) ||
       (itemRows[0].desc   || '').toLowerCase().includes(search);
 
-    const matchesStatus = statusF === 'ALL' || itemRows.some(r => r.status === statusF);
-    const matchesType   = typeF   === 'ALL' || itemRows.some(r => r.seg_type === typeF);
+    if (!matchesSearch) return false;
 
-    return matchesSearch && matchesStatus && matchesType;
+    // Check if the item has at least one segment row matching status and type
+    const hasMatchingSegment = itemRows.some(r => {
+      const matchesStatus = statusF === 'ALL' || r.status === statusF;
+      const matchesType   = typeF   === 'ALL' || r.seg_type === typeF;
+      return matchesStatus && matchesType;
+    });
+
+    return hasMatchingSegment;
   });
 
   _state.comparePage = 1;
@@ -438,6 +455,9 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
   let stt = sttOffset;
   let zebraFlag = false;
 
+  const statusF = $('compare-status-filter').value;
+  const typeF   = $('compare-type-filter').value;
+
   groupOrder.forEach(itemKey => {
     stt++;
     zebraFlag = !zebraFlag;
@@ -445,8 +465,15 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
     const groupId = `g${stt}`;
     const itemRows = groups[itemKey];
 
-    itemRows.forEach((r, segIdx) => {
-      const isLast = segIdx === itemRows.length - 1;
+    // Filter rows of the item to only show the ones matching the active filters
+    const visibleRows = itemRows.filter(r => {
+      const matchesStatus = statusF === 'ALL' || r.status === statusF;
+      const matchesType   = typeF   === 'ALL' || r.seg_type === typeF;
+      return matchesStatus && matchesType;
+    });
+
+    visibleRows.forEach((r, segIdx) => {
+      const isLast = segIdx === visibleRows.length - 1;
       const baseClass = `${zebraClass}`;
 
       // Helper to generate the metadata cells (common to all 4 rows)
@@ -565,15 +592,6 @@ function renderWindowTab() {
 
   // Render rows
   renderWindowRows(data);
-
-  // Filters
-  const searchEl = $('window-search');
-  const dirEl    = $('window-direction-filter');
-  const typeEl   = $('window-type-filter');
-  const applyFilter = () => filterWindowTable();
-  searchEl.addEventListener('input', applyFilter);
-  dirEl.addEventListener('change', applyFilter);
-  typeEl.addEventListener('change', applyFilter);
 }
 
 function renderWindowRows(data) {
@@ -654,3 +672,12 @@ function filterWindowTable() {
 document.querySelectorAll('.tab-pane').forEach(p => {
   if (!p.classList.contains('active')) p.style.display = 'none';
 });
+
+// Register filters globally once
+$('compare-search').addEventListener('input', applyCompareFilter);
+$('compare-status-filter').addEventListener('change', applyCompareFilter);
+$('compare-type-filter').addEventListener('change', applyCompareFilter);
+
+$('window-search').addEventListener('input', filterWindowTable);
+$('window-direction-filter').addEventListener('change', filterWindowTable);
+$('window-type-filter').addEventListener('change', filterWindowTable);

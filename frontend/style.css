@@ -606,35 +606,55 @@ body {
 .data-table tr:last-child td { border-bottom: none; }
 
 /* PSI Table sticky columns */
-.psi-table th:nth-child(1),
+.psi-table th:nth-child(1) {
+  position: sticky; left: 0; z-index: 21;
+  width: 40px; min-width: 40px; max-width: 40px;
+  background: var(--dark-blue) !important;
+}
 .psi-table td:nth-child(1) {
   position: sticky; left: 0; z-index: 10;
   width: 40px; min-width: 40px; max-width: 40px;
   background: inherit;
 }
 
-.psi-table th:nth-child(2),
+.psi-table th:nth-child(2) {
+  position: sticky; left: 40px; z-index: 21;
+  width: 110px; min-width: 110px; max-width: 110px;
+  background: var(--dark-blue) !important;
+}
 .psi-table td:nth-child(2) {
   position: sticky; left: 40px; z-index: 10;
   width: 110px; min-width: 110px; max-width: 110px;
   background: inherit;
 }
 
-.psi-table th:nth-child(3),
+.psi-table th:nth-child(3) {
+  position: sticky; left: 150px; z-index: 21;
+  width: 140px; min-width: 140px; max-width: 140px;
+  background: var(--dark-blue) !important;
+}
 .psi-table td:nth-child(3) {
   position: sticky; left: 150px; z-index: 10;
   width: 140px; min-width: 140px; max-width: 140px;
   background: inherit;
 }
 
-.psi-table th:nth-child(4),
+.psi-table th:nth-child(4) {
+  position: sticky; left: 290px; z-index: 21;
+  width: 180px; min-width: 180px; max-width: 180px;
+  background: var(--dark-blue) !important;
+}
 .psi-table td:nth-child(4) {
   position: sticky; left: 290px; z-index: 10;
   width: 180px; min-width: 180px; max-width: 180px;
   background: inherit;
 }
 
-.psi-table th:nth-child(5),
+.psi-table th:nth-child(5) {
+  position: sticky; left: 470px; z-index: 21;
+  width: 110px; min-width: 110px; max-width: 110px;
+  background: var(--dark-blue) !important;
+}
 .psi-table td:nth-child(5) {
   position: sticky; left: 470px; z-index: 10;
   width: 110px; min-width: 110px; max-width: 110px;
@@ -642,7 +662,9 @@ body {
 }
 
 /* Sticky shadow effect on last sticky col */
-.psi-table th:nth-child(5),
+.psi-table th:nth-child(5) {
+  box-shadow: 4px 0 8px -2px rgba(0,0,0,0.08);
+}
 .psi-table td:nth-child(5) {
   box-shadow: 4px 0 8px -2px rgba(0,0,0,0.08);
 }
