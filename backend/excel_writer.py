@@ -15,23 +15,52 @@ C_LT_BLUE    = "#BDD7EE"
 C_WHITE      = "#FFFFFF"
 C_ZEBRA      = "#F8F9FB"
 
+# Heatmap palette to match requested styles (positive = red/pink, negative = yellow/orange)
+C_HEAT_P_DARK    = "#FF5B62" # Large positive >= 30%
+C_HEAT_P_MEDIUM  = "#FF8F95" # Medium positive >= 15%
+C_HEAT_P_LIGHT   = "#FFC7CE" # Small positive >= 8%
+C_HEAT_P_MICRO   = "#FFEBEE" # Micro positive > 0%
+
+C_HEAT_N_EXTREME = "#ED7D31" # Extreme negative <= -50%
+C_HEAT_N_DARK    = "#F4B084" # Large negative <= -25%
+C_HEAT_N_MEDIUM  = "#FFE699" # Medium negative <= -10%
+C_HEAT_N_LIGHT   = "#FFF2CC" # Small negative < 0%
+
+C_FONT_P_DARK    = "#FFFFFF"
+C_FONT_P_MEDIUM  = "#FFFFFF"
+C_FONT_P_LIGHT   = "#9C0006" # Dark red text for standard light red fill
+C_FONT_P_MICRO   = "#9C0006"
+
+C_FONT_N_EXTREME = "#FFFFFF"
+C_FONT_N_DARK    = "#000000"
+C_FONT_N_MEDIUM  = "#000000"
+C_FONT_N_LIGHT   = "#000000"
+
 def _heat_fill_colors(pct: float):
     """Return (bg_color, font_color) based on pct."""
     if not math.isfinite(pct):
-        return None, C_DARK_BLUE
-    if pct >= 0.5:
-        return C_RED, C_WHITE
-    if pct >= 0.2:
-        return C_ORANGE, C_WHITE
-    if pct >= 0.1:
-        return C_YELLOW, "#000000"
-    if pct > -0.1:
         return None, "#000000"
-    if pct > -0.2:
-        return C_LT_BLUE, "#000000"
-    if pct > -0.5:
-        return C_BLUE, C_WHITE
-    return C_DARK_BLUE, C_WHITE
+    if pct == 0.0:
+        return None, "#000000"
+        
+    if pct > 0:
+        if pct >= 0.3:
+            return C_HEAT_P_DARK, C_FONT_P_DARK
+        elif pct >= 0.15:
+            return C_HEAT_P_MEDIUM, C_FONT_P_MEDIUM
+        elif pct >= 0.08:
+            return C_HEAT_P_LIGHT, C_FONT_P_LIGHT
+        else:
+            return C_HEAT_P_MICRO, C_FONT_P_MICRO
+    else:
+        if pct <= -0.5:
+            return C_HEAT_N_EXTREME, C_FONT_N_EXTREME
+        elif pct <= -0.25:
+            return C_HEAT_N_DARK, C_FONT_N_DARK
+        elif pct <= -0.1:
+            return C_HEAT_N_MEDIUM, C_FONT_N_MEDIUM
+        else:
+            return C_HEAT_N_LIGHT, C_FONT_N_LIGHT
 
 def get_format(wb, bg_color=None, font_color="#000000", bold=False, align="left", num_fmt=None, bottom_border=False):
     key = (bg_color, font_color, bold, align, num_fmt, bottom_border)

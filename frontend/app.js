@@ -52,13 +52,18 @@ function formatPct(p) {
 
 function heatClass(pct) {
   if (pct == null || !isFinite(pct)) return '';
-  if (pct >= 0.5)  return 'heat-p50';
-  if (pct >= 0.2)  return 'heat-p20';
-  if (pct >= 0.1)  return 'heat-p10';
-  if (pct > -0.1)  return 'heat-neutral';
-  if (pct > -0.2)  return 'heat-n10';
-  if (pct > -0.5)  return 'heat-n20';
-  return 'heat-n50';
+  if (pct === 0) return '';
+  if (pct > 0) {
+    if (pct >= 0.3)  return 'heat-p-dark';
+    if (pct >= 0.15) return 'heat-p-medium';
+    if (pct >= 0.08) return 'heat-p-light';
+    return 'heat-p-micro';
+  } else {
+    if (pct <= -0.5)  return 'heat-n-extreme';
+    if (pct <= -0.25) return 'heat-n-dark';
+    if (pct <= -0.1)  return 'heat-n-medium';
+    return 'heat-n-light';
+  }
 }
 
 function statusBadge(status) {

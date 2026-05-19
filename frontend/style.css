@@ -13,6 +13,27 @@
   --row-old:     #EBF3FB;
   --row-new:     #EEF5EA;
 
+  /* Heatmap Color scale variables (matching Excel requested styles) */
+  --heat-p-dark:        #FF5B62;
+  --heat-p-medium:      #FF8F95;
+  --heat-p-light:       #FFC7CE;
+  --heat-p-micro:       #FFEBEE;
+  
+  --heat-p-dark-txt:    #FFFFFF;
+  --heat-p-medium-txt:  #FFFFFF;
+  --heat-p-light-txt:   #9C0006;
+  --heat-p-micro-txt:   #9C0006;
+
+  --heat-n-extreme:     #ED7D31;
+  --heat-n-dark:        #F4B084;
+  --heat-n-medium:      #FFE699;
+  --heat-n-light:       #FFF2CC;
+  
+  --heat-n-extreme-txt: #FFFFFF;
+  --heat-n-dark-txt:    #000000;
+  --heat-n-medium-txt:  #000000;
+  --heat-n-light-txt:   #000000;
+
   --bg:          #F4F6F9;
   --surface:     #FFFFFF;
   --border:      #E2E6EA;
@@ -710,13 +731,15 @@ tr.group-child.collapsed { display: none; }
 .dir-zeroout    { background: var(--red);    color: var(--white); }
 
 /* ── Heatmap Classes ─────────────────────────────────────────────── */
-.heat-p50   { background: var(--red)     !important; color: var(--white) !important; }
-.heat-p20   { background: var(--orange)  !important; color: var(--white) !important; }
-.heat-p10   { background: var(--yellow)  !important; color: #333 !important; }
-.heat-neutral{}
-.heat-n10   { background: var(--lt-blue) !important; color: #333 !important; }
-.heat-n20   { background: var(--blue)    !important; color: var(--white) !important; }
-.heat-n50   { background: var(--dark-blue)!important; color: var(--white) !important; }
+.heat-p-dark   { background: var(--heat-p-dark)   !important; color: var(--heat-p-dark-txt)   !important; }
+.heat-p-medium { background: var(--heat-p-medium) !important; color: var(--heat-p-medium-txt) !important; }
+.heat-p-light  { background: var(--heat-p-light)  !important; color: var(--heat-p-light-txt)  !important; }
+.heat-p-micro  { background: var(--heat-p-micro)  !important; color: var(--heat-p-micro-txt)  !important; }
+
+.heat-n-extreme{ background: var(--heat-n-extreme)!important; color: var(--heat-n-extreme-txt)!important; }
+.heat-n-dark   { background: var(--heat-n-dark)   !important; color: var(--heat-n-dark-txt)   !important; }
+.heat-n-medium { background: var(--heat-n-medium) !important; color: var(--heat-n-medium-txt) !important; }
+.heat-n-light  { background: var(--heat-n-light)  !important; color: var(--heat-n-light-txt)  !important; }
 
 /* ── Window Table ─────────────────────────────────────────────────── */
 .window-table th:nth-child(1)  { width: 40px;  }
