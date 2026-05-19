@@ -14,25 +14,28 @@
   --row-new:     #EEF5EA;
 
   /* Heatmap Color scale variables (matching Excel requested styles) */
-  --heat-p-dark:        #FF5B62;
-  --heat-p-medium:      #FF8F95;
-  --heat-p-light:       #FFC7CE;
-  --heat-p-micro:       #FFEBEE;
+  --heat-p-dark:        #C6EFCE; /* Excel Light Green fill */
+  --heat-p-medium:      #D5F5E3;
+  --heat-p-light:       #EAFAF1;
+  --heat-p-micro:       #F4FBF7;
   
-  --heat-p-dark-txt:    #FFFFFF;
-  --heat-p-medium-txt:  #FFFFFF;
-  --heat-p-light-txt:   #9C0006;
-  --heat-p-micro-txt:   #9C0006;
+  --heat-p-dark-txt:    #006100; /* Excel Dark Green text */
+  --heat-p-medium-txt:  #196F3D;
+  --heat-p-light-txt:   #196F3D;
+  --heat-p-micro-txt:   #196F3D;
 
-  --heat-n-extreme:     #ED7D31;
-  --heat-n-dark:        #F4B084;
-  --heat-n-medium:      #FFE699;
-  --heat-n-light:       #FFF2CC;
+  --heat-n-extreme:     #FFC7CE; /* Excel Light Red fill */
+  --heat-n-dark:        #FADBD8;
+  --heat-n-medium:      #FDEBD0;
+  --heat-n-light:       #FEF9E7;
   
-  --heat-n-extreme-txt: #FFFFFF;
-  --heat-n-dark-txt:    #000000;
-  --heat-n-medium-txt:  #000000;
-  --heat-n-light-txt:   #000000;
+  --heat-n-extreme-txt: #9C0006; /* Excel Dark Red text */
+  --heat-n-dark-txt:    #78281F;
+  --heat-n-medium-txt:  #7E5109;
+  --heat-n-light-txt:   #7D6608;
+
+  --txt-pos:            #006100;
+  --txt-neg:            #9C0006;
 
   --bg:          #F4F6F9;
   --surface:     #FFFFFF;
@@ -762,6 +765,10 @@ tr.group-child.collapsed { display: none; }
 .heat-n-dark   { background: var(--heat-n-dark)   !important; color: var(--heat-n-dark-txt)   !important; }
 .heat-n-medium { background: var(--heat-n-medium) !important; color: var(--heat-n-medium-txt) !important; }
 .heat-n-light  { background: var(--heat-n-light)  !important; color: var(--heat-n-light-txt)  !important; }
+
+/* ── Heatmap Delta Text Colors (No bg color) ─────────────────────── */
+.txt-pos { color: var(--txt-pos) !important; }
+.txt-neg { color: var(--txt-neg) !important; }
 
 /* ── Window Table ─────────────────────────────────────────────────── */
 .window-table th:nth-child(1)  { width: 40px;  }

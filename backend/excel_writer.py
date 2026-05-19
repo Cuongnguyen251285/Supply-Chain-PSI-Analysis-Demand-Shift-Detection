@@ -15,26 +15,29 @@ C_LT_BLUE    = "#BDD7EE"
 C_WHITE      = "#FFFFFF"
 C_ZEBRA      = "#F8F9FB"
 
-# Heatmap palette to match requested styles (positive = red/pink, negative = yellow/orange)
-C_HEAT_P_DARK    = "#FF5B62" # Large positive >= 30%
-C_HEAT_P_MEDIUM  = "#FF8F95" # Medium positive >= 15%
-C_HEAT_P_LIGHT   = "#FFC7CE" # Small positive >= 8%
-C_HEAT_P_MICRO   = "#FFEBEE" # Micro positive > 0%
+# Heatmap palette to match standard desaturated Excel styles
+# Positive %: Green theme (growth/increase)
+C_HEAT_P_DARK    = "#C6EFCE" # Large positive >= 30%
+C_HEAT_P_MEDIUM  = "#D5F5E3" # Medium positive >= 15%
+C_HEAT_P_LIGHT   = "#EAFAF1" # Small positive >= 8%
+C_HEAT_P_MICRO   = "#F4FBF7" # Micro positive > 0%
 
-C_HEAT_N_EXTREME = "#ED7D31" # Extreme negative <= -50%
-C_HEAT_N_DARK    = "#F4B084" # Large negative <= -25%
-C_HEAT_N_MEDIUM  = "#FFE699" # Medium negative <= -10%
-C_HEAT_N_LIGHT   = "#FFF2CC" # Small negative < 0%
+# Negative %: Red/Orange theme (drop/decrease)
+C_HEAT_N_EXTREME = "#FFC7CE" # Extreme negative <= -50%
+C_HEAT_N_DARK    = "#FADBD8" # Large negative <= -25%
+C_HEAT_N_MEDIUM  = "#FDEBD0" # Medium negative <= -10%
+C_HEAT_N_LIGHT   = "#FEF9E7" # Small negative < 0%
 
-C_FONT_P_DARK    = "#FFFFFF"
-C_FONT_P_MEDIUM  = "#FFFFFF"
-C_FONT_P_LIGHT   = "#9C0006" # Dark red text for standard light red fill
-C_FONT_P_MICRO   = "#9C0006"
+# Font colors matching backgrounds for high readability and low eye-strain
+C_FONT_P_DARK    = "#006100"
+C_FONT_P_MEDIUM  = "#196F3D"
+C_FONT_P_LIGHT   = "#196F3D"
+C_FONT_P_MICRO   = "#196F3D"
 
-C_FONT_N_EXTREME = "#FFFFFF"
-C_FONT_N_DARK    = "#000000"
-C_FONT_N_MEDIUM  = "#000000"
-C_FONT_N_LIGHT   = "#000000"
+C_FONT_N_EXTREME = "#9C0006"
+C_FONT_N_DARK    = "#78281F"
+C_FONT_N_MEDIUM  = "#7E5109"
+C_FONT_N_LIGHT   = "#7D6608"
 
 def _heat_fill_colors(pct: float):
     """Return (bg_color, font_color) based on pct."""
@@ -246,12 +249,15 @@ def _write_compare_sheet(
                 ws.write(row_idx, 7, r["old_total"] if r["old_total"] else "", get_format(wb, bg_color=zebra_fill, align="right", num_fmt="#,##0;(#,##0);-", bottom_border=apply_bottom))
                 # Col 8: Total NEW
                 ws.write(row_idx, 8, r["new_total"] if r["new_total"] else "", get_format(wb, bg_color=zebra_fill, align="right", num_fmt="#,##0;(#,##0);-", bottom_border=apply_bottom))
-                # Col 9: Total Δ
+                # Col 9: Total Δ (Color text only, desaturated zebra fill)
                 dt = r["delta_total"]
-                ws.write(row_idx, 9, dt if dt != 0 else "", get_format(wb, bg_color=zebra_fill, align="right", num_fmt="+#,##0;-#,##0;-", bold=True, bottom_border=apply_bottom))
+                fc_d = "#006100" if dt > 0 else ("#9C0006" if dt < 0 else "#000000")
+                ws.write(row_idx, 9, dt if dt != 0 else "", get_format(wb, bg_color=zebra_fill, font_color=fc_d, align="right", num_fmt="+#,##0;-#,##0;-", bold=True, bottom_border=apply_bottom))
                 # Col 10: Total %Δ
                 pt = r["pct_total"]
-                ws.write(row_idx, 10, pt if pt != 0 else "", get_format(wb, bg_color=zebra_fill, align="right", num_fmt="+0.0%;-0.0%;-", bold=True, bottom_border=apply_bottom))
+                bg_pt, fc_pt = _heat_fill_colors(pt) if pt != 0 else (None, "#000000")
+                fill_pt = bg_pt if bg_pt else zebra_fill
+                ws.write(row_idx, 10, pt if pt != 0 else "", get_format(wb, bg_color=fill_pt, font_color=fc_pt, align="right", num_fmt="+0.0%;-0.0%;-", bold=True, bottom_border=apply_bottom))
 
                 # Col 11: Flag
                 if is_demand and r["flag"]:
@@ -276,23 +282,25 @@ def _write_compare_sheet(
                 ws.write(new_row, FIXED_COLS + wi, wd["new"] if wd["new"] != 0 else "", get_format(wb, bg_color=zebra_fill, align="right", num_fmt="#,##0;(#,##0);-"))
             current_row += 1
 
-            # DELTA row
+            # DELTA row (Remove background heatmap fill, use font colors only)
             delta_row = current_row
             _write_meta(delta_row, "Δ")
             for wi, wd in enumerate(weeks_data):
                 d = wd["delta"]
-                p = wd["pct"]
                 o = wd["old"]
                 n = wd["new"]
                 
                 c_val = d if (o != 0 or n != 0) else ""
-                bg, fc = _heat_fill_colors(p)
                 if c_val == "":
-                    bg = None
                     fc = "#000000"
-                fill_color = bg if bg else zebra_fill
+                elif d > 0:
+                    fc = "#006100" # Soft green text
+                elif d < 0:
+                    fc = "#9C0006" # Soft red text
+                else:
+                    fc = "#000000"
                 
-                ws.write(delta_row, FIXED_COLS + wi, c_val, get_format(wb, bg_color=fill_color, font_color=fc, bold=True, align="right", num_fmt="+#,##0;-#,##0;-"))
+                ws.write(delta_row, FIXED_COLS + wi, c_val, get_format(wb, bg_color=zebra_fill, font_color=fc, bold=True, align="right", num_fmt="+#,##0;-#,##0;-"))
             current_row += 1
 
             # PCT row

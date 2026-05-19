@@ -477,13 +477,33 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
       const baseClass = `${zebraClass}`;
 
       // Helper to generate the metadata cells (common to all 4 rows)
-      const makeMetaCells = (metricVal, showToggle) => {
+      const makeMetaCells = (metricVal, showToggle, isDeltaRow = false, isPctRow = false) => {
         const flagBadge = (r.seg_type === 'Demand' && r.flag)
           ? `<span class="badge ${{ NEW: 'badge-new', REMOVED: 'badge-removed', SPIKE: 'badge-spike', DROP: 'badge-drop' }[r.status] || ''}">${esc(r.flag)}</span>`
           : '';
         const itemCellContent = showToggle
           ? `<span class="collapse-toggle" data-group="${groupId}"><span class="arrow">&#9660;</span> ${esc(r.item)}</span>`
           : esc(r.item);
+
+        // Styling for Total Delta
+        const dt = r.delta_total;
+        let totalDeltaHTML = '';
+        if (isDeltaRow && dt !== 0) {
+          const tc = dt > 0 ? 'txt-pos' : 'txt-neg';
+          totalDeltaHTML = `<td class="num-cell ${tc}" style="font-weight:700;">${(dt >= 0 ? '+' : '') + formatNumRaw(dt)}</td>`;
+        } else {
+          totalDeltaHTML = `<td class="num-cell" style="font-weight:700;">${dt !== 0 ? (dt >= 0 ? '+' : '') + formatNumRaw(dt) : '-'}</td>`;
+        }
+
+        // Styling for Total %Delta
+        const pt = r.pct_total;
+        let totalPctHTML = '';
+        if (isPctRow && pt !== 0) {
+          const hc = heatClass(pt);
+          totalPctHTML = `<td class="num-cell ${hc}" style="font-weight:700;">${formatPct(pt)}</td>`;
+        } else {
+          totalPctHTML = `<td class="num-cell" style="font-weight:700;">${isPctRow ? formatPct(pt) : ''}</td>`;
+        }
 
         return `
           <td style="text-align:center;font-weight:700;color:var(--text-muted);">${stt}</td>
@@ -495,8 +515,8 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
           <td style="text-align:center;">${statusBadge(r.status)}</td>
           <td class="num-cell">${formatNumRaw(r.old_total)}</td>
           <td class="num-cell">${formatNumRaw(r.new_total)}</td>
-          <td class="num-cell" style="font-weight:700;">${r.delta_total !== 0 ? (r.delta_total >= 0 ? '+' : '') + formatNumRaw(r.delta_total) : '-'}</td>
-          <td class="num-cell" style="font-weight:700;">${formatPct(r.pct_total)}</td>
+          ${totalDeltaHTML}
+          ${totalPctHTML}
           <td style="text-align:center;">${flagBadge}</td>
         `;
       };
@@ -505,7 +525,7 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
       const oldRowClass = `row-old ${baseClass}`;
       html += `<tr class="${oldRowClass}" data-group="${groupId}" data-item="${esc(r.item)}"
                    data-seg="${esc(r.seg_type)}" data-status="${r.status}">`;
-      html += makeMetaCells(_state.oldLabel, segIdx === 0);
+      html += makeMetaCells(_state.oldLabel, segIdx === 0, false, false);
       // Week values OLD
       weeks.forEach((w, wi) => {
         const hidden = wi >= MAX ? ' week-col-hidden' : '';
@@ -519,7 +539,7 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
       const newRowClass = `row-new ${baseClass} group-child`;
       html += `<tr class="${newRowClass}" data-group="${groupId}" data-item="${esc(r.item)}"
                    data-seg="${esc(r.seg_type)}" data-status="${r.status}">`;
-      html += makeMetaCells(_state.newLabel, false);
+      html += makeMetaCells(_state.newLabel, false, false, false);
       // Week values NEW
       weeks.forEach((w, wi) => {
         const hidden = wi >= MAX ? ' week-col-hidden' : '';
@@ -533,22 +553,23 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
       const deltaRowClass = `row-delta ${baseClass} group-child`;
       html += `<tr class="${deltaRowClass}" data-group="${groupId}" data-item="${esc(r.item)}"
                    data-seg="${esc(r.seg_type)}" data-status="${r.status}">`;
-      html += makeMetaCells('Δ', false);
-      // Week values Delta
+      html += makeMetaCells('Δ', false, true, false);
+      // Week values Delta (No background heatmap fill, use font colors only)
       weeks.forEach((w, wi) => {
         const hidden = wi >= MAX ? ' week-col-hidden' : '';
         const wdata = r.weeks[wi] || { old: 0, new: 0, delta: 0, pct: 0 };
         const d = wdata.delta || 0;
-        const p = wdata.pct || 0;
         const o = wdata.old || 0;
         const nv = wdata.new || 0;
         let cellVal = '';
+        let txtClass = '';
         if (o !== 0 || nv !== 0) {
           const ds = d >= 0 ? '+' : '';
           cellVal = `${ds}${formatNumRaw(d)}`;
+          if (d > 0) txtClass = 'txt-pos';
+          else if (d < 0) txtClass = 'txt-neg';
         }
-        const hc = cellVal ? heatClass(p) : '';
-        html += `<td class="week-col week-col-wrapper ${hc}${hidden}" data-week-idx="${wi}" style="font-weight:700;">${cellVal}</td>`;
+        html += `<td class="week-col week-col-wrapper ${txtClass}${hidden}" data-week-idx="${wi}" style="font-weight:700;">${cellVal}</td>`;
       });
       html += '</tr>';
 
@@ -557,7 +578,7 @@ function buildCompareRows(groupOrder, groups, weeks, sttOffset) {
       const pctRowClass = `row-pct ${baseClass} group-child ${deltaEndClass}`;
       html += `<tr class="${pctRowClass}" data-group="${groupId}" data-item="${esc(r.item)}"
                    data-seg="${esc(r.seg_type)}" data-status="${r.status}">`;
-      html += makeMetaCells('%Δ', false);
+      html += makeMetaCells('%Δ', false, false, true);
       // Week values Pct
       weeks.forEach((w, wi) => {
         const hidden = wi >= MAX ? ' week-col-hidden' : '';
