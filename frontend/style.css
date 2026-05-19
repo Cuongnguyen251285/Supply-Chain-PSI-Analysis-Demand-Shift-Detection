@@ -328,6 +328,14 @@ body {
 }
 .btn-download:hover { filter: brightness(1.12); }
 
+.btn-download-filtered {
+  background: var(--blue);
+  color: var(--white);
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+}
+.btn-download-filtered:hover { filter: brightness(1.12); }
+
 .btn-icon { font-size: 1em; }
 
 /* ── Error Box ───────────────────────────────────────────────────── */

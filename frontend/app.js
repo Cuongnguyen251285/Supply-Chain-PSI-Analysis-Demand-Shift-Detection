@@ -27,6 +27,7 @@ const progressWrap   = $('progress-wrap');
 const progressBar    = $('progress-bar');
 const progressLabel  = $('progress-label');
 const downloadBtn    = $('download-btn');
+const downloadFilteredBtn = $('download-filtered-btn');
 const newCompareBtn  = $('new-compare-btn');
 const toggleWeeksBtn = $('toggle-weeks-btn');
 
@@ -261,6 +262,29 @@ newCompareBtn.addEventListener('click', () => {
 downloadBtn.addEventListener('click', () => {
   if (_state.sessionId) {
     window.open(`/api/download/${_state.sessionId}`, '_blank');
+  }
+});
+
+downloadFilteredBtn.addEventListener('click', () => {
+  if (_state.sessionId) {
+    const cSearch = $('compare-search').value;
+    const cStatus = $('compare-status-filter').value;
+    const cType   = $('compare-type-filter').value;
+
+    const wSearch = $('window-search').value;
+    const wDir    = $('window-direction-filter').value;
+    const wType   = $('window-type-filter').value;
+
+    const url = `/api/download-filtered/${_state.sessionId}?` + new URLSearchParams({
+      c_search: cSearch,
+      c_status: cStatus,
+      c_type: cType,
+      w_search: wSearch,
+      w_dir: wDir,
+      w_type: wType
+    }).toString();
+
+    window.open(url, '_blank');
   }
 });
 
